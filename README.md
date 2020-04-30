@@ -7,29 +7,21 @@ the web some old decks, shared a decade ago, in this format. This
 add-on allow to import them.
 
 ## Warning
-You should probably deactivate this add-on when you don't use it. It
-essentially install a copy of anki 2.0 which itself install a copy of
-anki 1.0; that's not things you want to use everyday. I can't
+You should probably restart anki once you're done importing
+data. Importing .anki data essentially starts a copy of anki 2.0 which
+itself starts a copy of anki 1.0; that's not things you want to keep
+running and potentially interfering with your normal study. I can't
 guarantee there won't be any interference (especially in hooks)
 
 ## Internal
-In
+The only new code is in `aqt/importing.py`, where I change the
+"onImport" function in order to deal with ".anki" file. If importing
+such a file is requested, it will import `anki/importing/__init__.py`,
+which itself will add all the required codebase. It essentially is a
+copy of the backend code and anki1 code, as it was before this feature
+was removed in all
 https://github.com/ankitects/anki/commit/1dce3eaaff649e2c1dbfd53bfe289cf42971045e#diff-c60e37732e601ec3d7f7e7146624b3a1
-, the code for importing anki was removed. I checked out this branch
-and essentially put all the relevant code (and probably a lot of
-irelevant code too) in this add-on.
-
-I thus of course had to import all code removed in the
-above-mentionned commit. In particular it contained `oldanki` which I
-believe to be anki 1's code. It contained anki2.0 importer for anki 1,
-and "upgrade" which transform Anki 1 into anki 2 format.
-
-I then realized that most of this code could actually not use todays
-collection; so I had to copy the old version of the collection file,
-and then media, models, decks... so that everything gets
-compatible. (To be precise, current collection uses a weakref; when a
-manager want to access it, it does not found it in the old collection,
-and raised an exception. Thus I had to copy all old managers.)
+.
 
 ## Technical
 
