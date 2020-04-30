@@ -534,7 +534,6 @@ order by ordinal""", mid)):
     # process, we automatically convert the references to new fields.
 
     def _rewriteMediaRefs(self):
-        col = self.col
         def rewriteRef(key):
             all = match.group(0)
             fname = match.group("fname")
@@ -552,7 +551,7 @@ order by ordinal""", mid)):
                 pre, ofld, suf = m2.groups()
                 # get index of field name
                 try:
-                    idx = col.models.fieldMap(m)[ofld][0]
+                    idx = self.col.models.fieldMap(m)[ofld][0]
                 except:
                     # invalid field or tag reference; don't rewrite
                     return
@@ -560,35 +559,35 @@ order by ordinal""", mid)):
                 while 1:
                     state['fields'] += 1
                     fld = "Media %d" % state['fields']
-                    if fld not in col.models.fieldMap(m).keys():
+                    if fld not in self.col.models.fieldMap(m).keys():
                         break
                 # add the new field
-                f = col.models.newField(fld)
+                f = self.col.models.newField(fld)
                 f['qsize'] = 20
                 f['qcol'] = '#000'
-                col.models.addField(m, f)
+                self.col.models.addField(m, f)
                 # loop through notes and write reference into new field
                 data = []
                 for id, flds in self.col.db.execute(
                     "select id, flds from notes where id in "+
-                    ids2str(col.models.nids(m))):
+                    ids2str(self.col.models.nids(m))):
                     sflds = splitFields(flds)
                     ref = all.replace(fname, pre+sflds[idx]+suf)
                     data.append((flds+ref, id))
                 # update notes
-                col.db.executemany("update notes set flds=? where id=?",
+                self.col.db.executemany("update notes set flds=? where id=?",
                                     data)
                 # note field for future
                 state['mflds'][fname] = fld
                 new = fld
             # rewrite reference in template
             t[key] = t[key].replace(all, "{{{%s}}}" % new)
-        regexps = col.media.regexps + [
+        regexps = self.col.media.regexps + [
             r"(\[latex\](?P<fname>.+?)\[/latex\])",
             r"(\[\$\](?P<fname>.+?)\[/\$\])",
             r"(\[\$\$\](?P<fname>.+?)\[/\$\$\])"]
         # process each model
-        for m in col.models.all():
+        for m in self.col.models.all():
             state = dict(mflds={}, fields=0)
             for t in m['tmpls']:
                 for r in regexps:
@@ -597,7 +596,7 @@ order by ordinal""", mid)):
                     for match in re.finditer(r, t['afmt']):
                         rewriteRef('afmt')
             if state['fields']:
-                col.models.save(m)
+                self.col.models.save(m)
 
     # Inactive templates
     ######################################################################
@@ -670,9 +669,8 @@ and ord = ? limit 1""", m['id'], t['ord']):
 
     def _upgradeRest(self):
         "Handle the rest of the upgrade to 2.0."
-        col = self.col
         # make sure we have a current model id
-        col.models.setCurrent(list(col.models.models.values())[0])
+        self.col.models.setCurrent(list(self.col.models.models.values())[0])
         # remove unused templates that were marked inactive
         self._removeInactive()
         # rewrite media references in card template
@@ -682,58 +680,58 @@ and ord = ? limit 1""", m['id'], t['ord']):
         # add fields for selectively used templates
         self._addFlagFields()
         # fix creation time
-        col.sched._updateCutoff()
+        self.col.sched._updateCutoff()
         d = datetime.datetime.today()
         d -= datetime.timedelta(hours=4)
         d = datetime.datetime(d.year, d.month, d.day)
         d += datetime.timedelta(hours=4)
-        d -= datetime.timedelta(days=1+int((time.time()-col.crt)/86400))
-        col.crt = int(time.mktime(d.timetuple()))
-        col.sched._updateCutoff()
+        d -= datetime.timedelta(days=1+int((time.time()-self.col.crt)/86400))
+        self.col.crt = int(time.mktime(d.timetuple()))
+        self.col.sched._updateCutoff()
         # update uniq cache
-        col.updateFieldCache(col.db.list("select id from notes"))
+        self.col.updateFieldCache(self.col.db.list("select id from notes"))
         # remove old views
         for v in ("failedCards", "revCardsOld", "revCardsNew",
                   "revCardsDue", "revCardsRandom", "acqCardsRandom",
                   "acqCardsOld", "acqCardsNew"):
-            col.db.execute("drop view if exists %s" % v)
+            self.col.db.execute("drop view if exists %s" % v)
         # remove stats, as it's all in the revlog now
-        col.db.execute("drop table if exists stats")
+        self.col.db.execute("drop table if exists stats")
         # suspended cards don't use ranges anymore
-        col.db.execute("update cards set queue=-1 where queue between -3 and -1")
-        col.db.execute("update cards set queue=-2 where queue between 3 and 5")
-        col.db.execute("update cards set queue=type where queue between 6 and 8")
+        self.col.db.execute("update cards set queue=-1 where queue between -3 and -1")
+        self.col.db.execute("update cards set queue=-2 where queue between 3 and 5")
+        self.col.db.execute("update cards set queue=type where queue between 6 and 8")
         # remove old deleted tables
         for t in ("cards", "notes", "models", "media"):
-            col.db.execute("drop table if exists %sDeleted" % t)
+            self.col.db.execute("drop table if exists %sDeleted" % t)
         # and failed cards
-        left = len(col.decks.confForDid(1)['lapse']['delays'])*1001
-        col.db.execute("""
+        left = len(self.col.decks.confForDid(1)['lapse']['delays'])*1001
+        self.col.db.execute("""
 update cards set left=?,type=1,queue=1,ivl=1 where type=1 and ivl <= 1
 and queue>=0""", left)
-        col.db.execute("""
+        self.col.db.execute("""
 update cards set odue=?,left=?,type=2 where type=1 and ivl > 1 and queue>=0""",
-                       col.sched.today+1, left)
+                       self.col.sched.today+1, left)
         # and due cards
-        col.db.execute("""
+        self.col.db.execute("""
 update cards set due = cast(
 (case when due < :stamp then 0 else 1 end) +
 ((due-:stamp)/86400) as int)+:today where type = 2
-""", stamp=col.sched.dayCutoff, today=col.sched.today)
+""", stamp=self.col.sched.dayCutoff, today=self.col.sched.today)
         # lapses were counted differently in 1.0, so we should have a higher
         # default lapse threshold
-        for d in col.decks.allConf():
+        for d in self.col.decks.allConf():
             d['lapse']['leechFails'] = 16
-            col.decks.save(d)
+            self.col.decks.save(d)
         # possibly re-randomize
-        conf = list(col.decks.allConf())[0]
+        conf = list(self.col.decks.allConf())[0]
         if not conf['new']['order']:
-            col.sched.randomizeCards(1)
+            self.col.sched.randomizeCards(1)
         else:
-            col.sched.orderCards(1)
+            self.col.sched.orderCards(1)
         # optimize and finish
-        col.db.commit()
-        col.db.execute("vacuum")
-        col.db.execute("analyze")
-        col.db.execute("update col set ver = ?", SCHEMA_VERSION)
-        col.save()
+        self.col.db.commit()
+        self.col.db.execute("vacuum")
+        self.col.db.execute("analyze")
+        self.col.db.execute("update col set ver = ?", SCHEMA_VERSION)
+        self.col.save()
