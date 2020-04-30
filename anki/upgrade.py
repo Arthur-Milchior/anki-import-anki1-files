@@ -466,8 +466,7 @@ order by ordinal""", mid)):
     #   explicit on upgrade.
     # - likewise with alignment and background color
     def _upgradeTemplates(self):
-        d = self.col
-        for m in d.models.all():
+        for m in self.col.models.all():
             # cache field styles
             styles = {}
             for f in m['flds']:
@@ -525,7 +524,7 @@ order by ordinal""", mid)):
                 del t['bg']
                 del t['align']
             # save model
-            d.models.save(m)
+            self.col.models.save(m)
 
     # Media references
     ######################################################################
@@ -606,24 +605,23 @@ order by ordinal""", mid)):
     # marked inactive and have no dependent cards.
 
     def _removeInactive(self):
-        d = self.col
-        for m in d.models.all():
+        for m in self.col.models.all():
             remove = []
             for t in m['tmpls']:
                 if not t['actv']:
-                    if not d.db.scalar("""
+                    if not self.col.db.scalar("""
 select 1 from cards where nid in (select id from notes where mid = ?)
 and ord = ? limit 1""", m['id'], t['ord']):
                         remove.append(t)
                 del t['actv']
             for r in remove:
                 try:
-                    d.models.remTemplate(m, r)
+                    self.col.models.remTemplate(m, r)
                 except AssertionError:
                     # if the model was unused this could result in all
                     # templates being removed; ignore error
                     pass
-            d.models.save(m)
+            self.col.models.save(m)
 
     # Conditional templates
     ######################################################################
