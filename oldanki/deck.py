@@ -86,7 +86,7 @@ decksTable = Table(
     Column('id', Integer, primary_key=True),
     Column('created', Float, nullable=False, default=time.time),
     Column('modified', Float, nullable=False, default=time.time),
-    Column('description', UnicodeText, nullable=False, default=u""),
+    Column('description', UnicodeText, nullable=False, default=""),
     Column('version', Integer, nullable=False, default=DECK_VERSION),
     Column('currentModelId', Integer, ForeignKey("models.id")),
     # syncName stores an md5sum of the deck path when syncing is enabled. If
@@ -111,10 +111,10 @@ decksTable = Table(
     # collapsing future cards
     Column('collapseTime', Integer, nullable=False, default=1),
     # priorities & postponing
-    Column('highPriority', UnicodeText, nullable=False, default=u"PriorityVeryHigh"),
-    Column('medPriority', UnicodeText, nullable=False, default=u"PriorityHigh"),
-    Column('lowPriority', UnicodeText, nullable=False, default=u"PriorityLow"),
-    Column('suspended', UnicodeText, nullable=False, default=u""), # obsolete
+    Column('highPriority', UnicodeText, nullable=False, default="PriorityVeryHigh"),
+    Column('medPriority', UnicodeText, nullable=False, default="PriorityHigh"),
+    Column('lowPriority', UnicodeText, nullable=False, default="PriorityLow"),
+    Column('suspended', UnicodeText, nullable=False, default=""), # obsolete
     # 0 is random, 1 is by input date
     Column('newCardOrder', Integer, nullable=False, default=1),
     # when to show new cards
@@ -157,7 +157,7 @@ class Deck(object):
     def _initVars(self):
         self.tmpMediaDir = None
         self.mediaPrefix = ""
-        self.lastTags = u""
+        self.lastTags = ""
         self.lastLoaded = time.time()
         self.undoEnabled = False
         self.sessionStartReps = 0
@@ -216,7 +216,7 @@ class Deck(object):
         # restore any cards temporarily suspended by alternate schedulers
         try:
             self.resetAfterReviewEarly()
-        except OperationalError, e:
+        except OperationalError as e:
             # will fail if deck hasn't been upgraded yet
             pass
 
@@ -238,8 +238,8 @@ class Deck(object):
         yes = parseTags(self.getVar(active))
         no = parseTags(self.getVar(inactive))
         if yes:
-            yids = tagIds(self.s, yes).values()
-            nids = tagIds(self.s, no).values()
+            yids = list(tagIds(self.s, yes).values())
+            nids = list(tagIds(self.s, no).values())
             return sql.replace(
                 "where",
                 "where +c.id in (select cardId from cardTags where "
@@ -248,7 +248,7 @@ class Deck(object):
                 ids2str(yids),
                 ids2str(nids)))
         elif no:
-            nids = tagIds(self.s, no).values()
+            nids = list(tagIds(self.s, no).values())
             return sql.replace(
                 "where",
                 "where +c.id not in (select cardId from cardTags where "
@@ -381,7 +381,7 @@ Card info: %d %d %d
 New type: %s""" % (self.failedSoonCount, self.revCount, self.newCountToday,
                           len(self.failedQueue), len(self.revQueue),
                           len(self.newQueue),
-                          card.reps, card.successive, oldSuc, `newType`))
+                          card.reps, card.successive, oldSuc, repr(newType)))
 
     def revOrder(self):
         return ("priority desc, interval desc",
@@ -625,7 +625,7 @@ order by combinedDue limit %d""" % self.queueLimit), lim=self.dueCutoff)
         else:
             yes = parseTags(active)
             if yes:
-                yids = tagIds(self.s, yes).values()
+                yids = list(tagIds(self.s, yes).values())
                 return sql.replace(
                     "where ",
                     "where +c.id in (select cardId from cardTags where "
@@ -1201,7 +1201,7 @@ limit 1""" % self.delay0))
             ids = tagIds(self.s, suspend)
             self.s.statement(
                 "update tags set priority = 0 where id in %s" %
-                ids2str(ids.values()))
+                ids2str(list(ids.values())))
         if len(cardIds) > 1000:
             limit = ""
         else:
@@ -1434,13 +1434,13 @@ combinedDue > :now and due < :now""", now=time.time())
                    format = re.sub("%\((.+?)\)s", "{{\\1}}", format)
                    empty = {}
                    local = {}; local.update(fact)
-                   local['tags'] = u""
-                   local['Tags'] = u""
-                   local['cardModel'] = u""
-                   local['modelName'] = u""
-                   for k in local.keys():
-                       empty[k] = u""
-                       empty["text:"+k] = u""
+                   local['tags'] = ""
+                   local['Tags'] = ""
+                   local['cardModel'] = ""
+                   local['modelName'] = ""
+                   for k in list(local.keys()):
+                       empty[k] = ""
+                       empty["text:"+k] = ""
                        local["text:"+k] = local[k]
                    empty['tags'] = ""
                    local['tags'] = fact.tags
@@ -1486,7 +1486,7 @@ where factId = :fid and cardModelId = :cmid""",
         try:
             fact.assertValid()
             fact.assertUnique(self.s)
-        except FactInvalidError, e:
+        except FactInvalidError as e:
             return e
 
     def factUseCount(self, factId):
@@ -1708,7 +1708,7 @@ select id from models""")
             changed = True
             self.startProgress(len(fieldMap)+2)
             seen = {}
-            for (old, new) in fieldMap.items():
+            for (old, new) in list(fieldMap.items()):
                 self.updateProgress(_("Changing fields..."))
                 seen[new] = 1
                 if new:
@@ -1750,7 +1750,7 @@ where id in %s""" % fids, t=time.time(), id=newModel.id)
         self.startProgress(len(cardMap)+4)
         toChange = []
         self.updateProgress(_("Changing cards..."))
-        for (old, new) in cardMap.items():
+        for (old, new) in list(cardMap.items()):
             if not new:
                 # delete
                 self.s.statement("""
@@ -1973,7 +1973,7 @@ order by fields.factId""" % ids2str([x[2] for x in ids])),
                         else:
                             files[f] = 1
             # update references - this could be more efficient
-            for (f, cnt) in files.items():
+            for (f, cnt) in list(files.items()):
                 if not cnt:
                     continue
                 updateMediaCount(self, f, cnt)
@@ -1984,7 +1984,7 @@ order by fields.factId""" % ids2str([x[2] for x in ids])),
     %s
     where id = :id""" % mod, pend)
             # update fields cache
-            self.updateFieldCache(facts.keys())
+            self.updateFieldCache(list(facts.keys()))
         if dirty:
             self.flushMod()
 
@@ -2088,7 +2088,7 @@ and cards.factId = facts.id""")
             # search for all
             l = []
             for ids in tagIds:
-                if isinstance(ids, types.ListType):
+                if isinstance(ids, list):
                     l.append("select cardId from cardTags where tagId in %s" %
                              ids2str(ids))
                 else:
@@ -2549,7 +2549,7 @@ where id = :id""", pending)
             if len(fieldFilters) > 0:
                 sfquery = ''
                 args = {}
-                for field, filters in fieldFilters.iteritems():
+                for field, filters in fieldFilters.items():
                     for filter in filters:
                         c = len(args)
                         if sfquery:
@@ -2587,7 +2587,7 @@ where id = :id""", pending)
             if len(cardFilters) > 0:
                 qaquery = ''
                 args = {}
-                for field, filters in cardFilters.iteritems():
+                for field, filters in cardFilters.items():
                     for filter in filters:
                         c = len(args)
                         if qaquery:
@@ -2851,7 +2851,7 @@ select id from facts where spaceUntil like :_ff_%d escape '\\'""" % c
                 vals[val] = [fid]
             else:
                 vals[val].append(fid)
-        return [(k,v) for (k,v) in vals.items() if len(v) > 1]
+        return [(k,v) for (k,v) in list(vals.items()) if len(v) > 1]
 
     # Progress info
     ##########################################################################
@@ -2897,7 +2897,7 @@ select id from facts where spaceUntil like :_ff_%d escape '\\'""" % c
 
     def name(self):
         if not self.path:
-            return u"untitled"
+            return "untitled"
         n = os.path.splitext(os.path.basename(self.path))[0]
         assert '/' not in n
         assert '\\' not in n
@@ -3178,7 +3178,7 @@ Return new path, relative to media dir."""
     # and the variable is not synced
 
     def enableSyncing(self):
-        self.syncName = unicode(checksum(self.path.encode("utf-8")))
+        self.syncName = str(checksum(self.path.encode("utf-8")))
         self.s.commit()
 
     def disableSyncing(self):
@@ -3221,7 +3221,7 @@ where id in %s""" % ids2str(ids)):
             try:
                 f.tags = self.s.scalar("""
 select group_concat(tag, " ") from tags t, cardTags ct
-where cardId = :cid and ct.tagId = t.id""", cid=id) or u""
+where cardId = :cid and ct.tagId = t.id""", cid=id) or ""
             except:
                 raise Exception("Your sqlite is too old.")
             cards = self.addFact(f)
@@ -3575,7 +3575,7 @@ seq > :s and seq <= :e order by seq desc""", s=start, e=end)
             required.append("dueDesc")
         # add/delete
         analyze = False
-        for (k, v) in indices.items():
+        for (k, v) in list(indices.items()):
             n = "ix_cards_%s2" % k
             if k in required:
                 if not self.s.scalar(
@@ -3597,7 +3597,7 @@ seq > :s and seq <= :e order by seq desc""", s=start, e=end)
 sourcesTable = Table(
     'sources', metadata,
     Column('id', Integer, nullable=False, primary_key=True),
-    Column('name', UnicodeText, nullable=False, default=u""),
+    Column('name', UnicodeText, nullable=False, default=""),
     Column('created', Float, nullable=False, default=time.time),
     Column('lastSync', Float, nullable=False, default=0),
     # -1 = never check, 0 = always check, 1+ = number of seconds passed.
@@ -3683,7 +3683,7 @@ class DeckStorage(object):
                     deck.engine.raw_connection().set_progress_handler(
                         deck.progressHandler, 100)
                 except:
-                    print "please install pysqlite 2.4 for better progress dialogs"
+                    print("please install pysqlite 2.4 for better progress dialogs")
             deck.engine.execute("pragma locking_mode = exclusive")
             deck.s = SessionHelper(s, lock=lock)
             # force a write lock
@@ -3720,7 +3720,7 @@ class DeckStorage(object):
                     traceback.print_exc()
                     deck.fixIntegrity()
                     deck = DeckStorage._upgradeDeck(deck, path)
-        except OperationalError, e:
+        except OperationalError as e:
             engine.dispose()
             if (str(e.orig).startswith("database table is locked") or
                 str(e.orig).startswith("database is locked")):
@@ -3972,7 +3972,7 @@ order by priority desc, due desc""")
     set combinedDue = max(due, spaceUntil)
     """)
             except:
-                print "failed to upgrade"
+                print("failed to upgrade")
             # rebuild with new file format
             deck.s.commit()
             deck.s.execute("pragma legacy_file_format = off")
@@ -4277,7 +4277,7 @@ nextFactor, reps, thinkingTime, yesCount, noCount from reviewHistory""")
                     "where id in %s" % ids2str(ids))
                 deck.rebuildCounts()
             # suspended tag obsolete - don't do this yet
-            deck.suspended = re.sub(u" ?Suspended ?", u"", deck.suspended)
+            deck.suspended = re.sub(" ?Suspended ?", "", deck.suspended)
             deck.updateTagPriorities()
             deck.version = 39
             deck.s.commit()
@@ -4356,7 +4356,7 @@ this message. (ERR-0101)""") % {
                     else:
                         unstyled.append(fm.name)
                     # fill out missing info
-                    fm.quizFontFamily = fm.quizFontFamily or u"Arial"
+                    fm.quizFontFamily = fm.quizFontFamily or "Arial"
                     fm.quizFontSize = fm.quizFontSize or 20
                     fm.quizFontColour = fm.quizFontColour or "#000000"
                     fm.editFontSize = fm.editFontSize or 20

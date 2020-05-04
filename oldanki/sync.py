@@ -22,9 +22,9 @@ Full sync support is not documented yet.
 """
 __docformat__ = 'restructuredtext'
 
-import zlib, re, urllib, urllib2, socket, time, shutil
+import zlib, re, urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse, socket, time, shutil
 from anki.utils import json as simplejson
-import os, base64, httplib, sys, tempfile, httplib, types
+import os, base64, http.client, sys, tempfile, http.client, types
 from datetime import date
 import oldanki, oldanki.deck, oldanki.cards
 from oldanki.db import sqlite
@@ -38,7 +38,7 @@ from oldanki.stats import globalStats
 from oldanki.utils import ids2str, hexifyID, checksum
 from oldanki.media import mediaFiles
 from oldanki.lang import _
-from hooks import runHook
+from .hooks import runHook
 
 if simplejson.__version__ < "1.7.3":
     raise Exception("SimpleJSON must be 1.7.3 or later.")
@@ -68,10 +68,10 @@ def incrementalSend(self, strOrFile):
         else:
             raise NotConnected()
     if self.debuglevel > 0:
-        print "send:", repr(str)
+        print("send:", repr(str))
     try:
         if (isinstance(strOrFile, str) or
-            isinstance(strOrFile, unicode)):
+            isinstance(strOrFile, str)):
             self.sock.sendall(strOrFile)
         else:
             cnt = 0
@@ -85,12 +85,12 @@ def incrementalSend(self, strOrFile):
                 if not data:
                     break
                 self.sock.sendall(data)
-    except socket.error, v:
+    except socket.error as v:
         if v[0] == 32:      # Broken pipe
             self.close()
         raise
 
-httplib.HTTPConnection.send = incrementalSend
+http.client.HTTPConnection.send = incrementalSend
 
 def fullSyncProgressHook(cnt):
     runHook("fullSyncProgress", "fromLocal", cnt)
@@ -334,7 +334,7 @@ class SyncTools(object):
             else:
                 ids[id] = [None, None]
         # loop through the hash, determining differences
-        for (id, (localMod, remoteMod)) in ids.items():
+        for (id, (localMod, remoteMod)) in list(ids.items()):
             if localMod and remoteMod:
                 # changed/existing on both sides
                 if localMod < remoteMod:
@@ -637,7 +637,7 @@ values
         if 'css' in d: del d['css']
         if 'models' in d: del d['models']
         if 'currentModel' in d: del d['currentModel']
-        keys = d.keys()
+        keys = list(d.keys())
         for k in keys:
             if isinstance(d[k], types.MethodType):
                 del d[k]
@@ -901,7 +901,7 @@ and cards.id in %s""" % ids2str([c[0] for c in cards])))
 
     def unstuff(self, data):
         "Uncompress and convert to unicode."
-        return simplejson.loads(unicode(zlib.decompress(data), "utf8"))
+        return simplejson.loads(str(zlib.decompress(data), "utf8"))
 
     def stuff(self, data):
         "Convert into UTF-8 and compress."
@@ -909,12 +909,12 @@ and cards.id in %s""" % ids2str([c[0] for c in cards])))
 
     def dictFromObj(self, obj):
         "Return a dict representing OBJ without any hidden db fields."
-        return dict([(k,v) for (k,v) in obj.__dict__.items()
+        return dict([(k,v) for (k,v) in list(obj.__dict__.items())
                      if not k.startswith("_")])
 
     def applyDict(self, obj, dict):
         "Apply each element in DICT to OBJ in a way the ORM notices."
-        for (k,v) in dict.items():
+        for (k,v) in list(dict.items()):
             setattr(obj, k, v)
 
     def realLists(self, result):
@@ -937,7 +937,7 @@ and cards.id in %s""" % ids2str([c[0] for c in cards])))
         if self.deck.lastSync <= 0:
             return True
         for sum in sums:
-            for l in sum.values():
+            for l in list(sum.values()):
                 if len(l) > 1000:
                     return True
         if self.deck.s.scalar(
@@ -982,7 +982,7 @@ and cards.id in %s""" % ids2str([c[0] for c in cards])))
             (fd, name) = tempfile.mkstemp(prefix="oldanki")
             tmp = open(name, "w+b")
             # post vars
-            for (key, value) in fields.items():
+            for (key, value) in list(fields.items()):
                 tmp.write('--' + MIME_BOUNDARY + "\r\n")
                 tmp.write('Content-Disposition: form-data; name="%s"\r\n' % key)
                 tmp.write('\r\n')
@@ -1014,10 +1014,10 @@ and cards.id in %s""" % ids2str([c[0] for c in cards])))
                 'Content-length': str(size),
                 'Host': SYNC_HOST,
                 }
-            req = urllib2.Request(SYNC_URL + "fullup?v=2", tmp, headers)
+            req = urllib.request.Request(SYNC_URL + "fullup?v=2", tmp, headers)
             try:
                 sendProgressHook = fullSyncProgressHook
-                res = urllib2.urlopen(req).read()
+                res = urllib.request.urlopen(req).read()
                 assert res.startswith("OK")
                 # update lastSync
                 c = sqlite.connect(path)
@@ -1036,8 +1036,8 @@ and cards.id in %s""" % ids2str([c[0] for c in cards])))
     def fullSyncFromServer(self, fields, path):
         try:
             runHook("fullSyncStarted", 0)
-            fields = urllib.urlencode(fields)
-            src = urllib.urlopen(SYNC_URL + "fulldown", fields)
+            fields = urllib.parse.urlencode(fields)
+            src = urllib.request.urlopen(SYNC_URL + "fulldown", fields)
             (fd, tmpname) = tempfile.mkstemp(dir=os.path.dirname(path),
                                              prefix="fullsync")
             tmp = open(tmpname, "wb")
@@ -1112,11 +1112,11 @@ class HttpSyncServerProxy(SyncServer):
 
     def hasDeck(self, deckName):
         self.connect()
-        return deckName in self.decks.keys()
+        return deckName in list(self.decks.keys())
 
     def availableDecks(self):
         self.connect()
-        return self.decks.keys()
+        return list(self.decks.keys())
 
     def createDeck(self, deckName):
         ret = self.runCmd("createDeck", name=deckName.encode("utf-8"))
@@ -1156,21 +1156,21 @@ class HttpSyncServerProxy(SyncServer):
         else:
             data['d'] = None
         data.update(args)
-        data = urllib.urlencode(data)
+        data = urllib.parse.urlencode(data)
         try:
-            f = urllib2.urlopen(SYNC_URL + action, data)
-        except (urllib2.URLError, socket.error, socket.timeout,
-                httplib.BadStatusLine), e:
+            f = urllib.request.urlopen(SYNC_URL + action, data)
+        except (urllib.error.URLError, socket.error, socket.timeout,
+                http.client.BadStatusLine) as e:
             raise SyncError(type="connectionError",
-                            exc=`e`)
+                            exc=repr(e))
         ret = f.read()
         if not ret:
             raise SyncError(type="noResponse")
         try:
             return self.unstuff(ret)
-        except Exception, e:
+        except Exception as e:
             raise SyncError(type="connectionError",
-                            exc=`e`)
+                            exc=repr(e))
 
 # HTTP server: respond to proxy requests and return data
 ##########################################################################
@@ -1232,5 +1232,5 @@ or %(c)s like '%%[sound:%%'""" % {'c': col})
         if not os.path.exists(dstfile):
             try:
                 shutil.copy2(srcfile, dstfile)
-            except IOError, OSError:
+            except IOError as OSError:
                 pass

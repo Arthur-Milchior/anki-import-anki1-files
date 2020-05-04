@@ -8,7 +8,7 @@ Exporting support
 """
 __docformat__ = 'restructuredtext'
 
-import itertools, time, re, os, HTMLParser
+import itertools, time, re, os, html.parser
 from operator import itemgetter
 from oldanki import DeckStorage
 from oldanki.cards import Card
@@ -44,9 +44,9 @@ class Exporter(object):
                 s = BS(text)
                 all = s('span', {'class': re.compile("fm.*")})
                 for e in all:
-                    e.replaceWith("".join([unicode(x) for x in e.contents]))
-                text = unicode(s)
-            except HTMLParser.HTMLParseError:
+                    e.replaceWith("".join([str(x) for x in e.contents]))
+                text = str(s)
+            except html.parser.HTMLParseError:
                 pass
         return text
 
@@ -60,7 +60,7 @@ class Exporter(object):
             d = tagIds(self.deck.s, self.limitTags, create=False)
             cards = self.deck.s.column0(
                 "select cardId from cardTags where tagid in %s" %
-                ids2str(d.values()))
+                ids2str(list(d.values())))
         self.count = len(cards)
         return cards
 
@@ -203,7 +203,7 @@ select cards.id, facts.tags from cards, facts
 where cards.factId = facts.id
 and cards.id in %s
 order by cards.created""" % strids))
-        out = u"\n".join(["%s\t%s%s" % (
+        out = "\n".join(["%s\t%s%s" % (
             self.escapeText(c[0], removeFields=True),
             self.escapeText(c[1], removeFields=True),
             self.tags(c[2]))

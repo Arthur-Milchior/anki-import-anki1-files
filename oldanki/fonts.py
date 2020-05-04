@@ -13,11 +13,11 @@ import sys
 policy="platform"
 
 mapping = [
-    [u"Mincho", u"MS Mincho", "win32"],
-    [u"Mincho", u"ＭＳ 明朝", "win32"],
-    [u"Mincho", u"ヒラギノ明朝 Pro W3", "mac"],
-    [u"Mincho", u"Kochi Mincho", "linux"],
-    [u"Mincho", u"東風明朝", "linux"],
+    ["Mincho", "MS Mincho", "win32"],
+    ["Mincho", "ＭＳ 明朝", "win32"],
+    ["Mincho", "ヒラギノ明朝 Pro W3", "mac"],
+    ["Mincho", "Kochi Mincho", "linux"],
+    ["Mincho", "東風明朝", "linux"],
     ]
 
 def platform():

@@ -27,11 +27,11 @@ cardsTable = Table(
     Column('cardModelId', Integer, ForeignKey("cardModels.id"), nullable=False),
     Column('created', Float, nullable=False, default=time.time),
     Column('modified', Float, nullable=False, default=time.time),
-    Column('tags', UnicodeText, nullable=False, default=u""),
+    Column('tags', UnicodeText, nullable=False, default=""),
     Column('ordinal', Integer, nullable=False),
     # cached - changed on fact update
-    Column('question', UnicodeText, nullable=False, default=u""),
-    Column('answer', UnicodeText, nullable=False, default=u""),
+    Column('question', UnicodeText, nullable=False, default=""),
+    Column('answer', UnicodeText, nullable=False, default=""),
     # default to 'normal' priority;
     # this is indexed in deck.py as we need to create a reverse index
     Column('priority', Integer, nullable=False, default=2),
@@ -74,7 +74,7 @@ class Card(object):
     "A card."
 
     def __init__(self, fact=None, cardModel=None, created=None):
-        self.tags = u""
+        self.tags = ""
         self.id = genID()
         # new cards start as new & due
         self.type = 2

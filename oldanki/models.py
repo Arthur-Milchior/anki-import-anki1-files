@@ -39,23 +39,23 @@ fieldModelsTable = Table(
     Column('ordinal', Integer, nullable=False),
     Column('modelId', Integer, ForeignKey('models.id'), nullable=False),
     Column('name', UnicodeText, nullable=False),
-    Column('description', UnicodeText, nullable=False, default=u""), # obsolete
+    Column('description', UnicodeText, nullable=False, default=""), # obsolete
     # reused as RTL marker
-    Column('features', UnicodeText, nullable=False, default=u""),
+    Column('features', UnicodeText, nullable=False, default=""),
     Column('required', Boolean, nullable=False, default=True),
     Column('unique', Boolean, nullable=False, default=True), # sqlite keyword
     Column('numeric', Boolean, nullable=False, default=False),
     # display
-    Column('quizFontFamily', UnicodeText, default=u"Arial"),
+    Column('quizFontFamily', UnicodeText, default="Arial"),
     Column('quizFontSize', Integer, default=20),
     Column('quizFontColour', String(7)),
-    Column('editFontFamily', UnicodeText, default=u"1"), # reused as <pre> toggle
+    Column('editFontFamily', UnicodeText, default="1"), # reused as <pre> toggle
     Column('editFontSize', Integer, default=20))
 
 class FieldModel(object):
     "The definition of one field in a fact."
 
-    def __init__(self, name=u"", required=True, unique=True):
+    def __init__(self, name="", required=True, unique=True):
         self.name = name
         self.required = required
         self.unique = unique
@@ -80,7 +80,7 @@ cardModelsTable = Table(
     Column('ordinal', Integer, nullable=False),
     Column('modelId', Integer, ForeignKey('models.id'), nullable=False),
     Column('name', UnicodeText, nullable=False),
-    Column('description', UnicodeText, nullable=False, default=u""), # obsolete
+    Column('description', UnicodeText, nullable=False, default=""), # obsolete
     Column('active', Boolean, nullable=False, default=True),
     # formats: question/answer/last(not used)
     Column('qformat', UnicodeText, nullable=False),
@@ -91,31 +91,31 @@ cardModelsTable = Table(
     Column('aedformat', UnicodeText),
     Column('questionInAnswer', Boolean, nullable=False, default=False),
     # unused
-    Column('questionFontFamily', UnicodeText, default=u"Arial"),
+    Column('questionFontFamily', UnicodeText, default="Arial"),
     Column('questionFontSize', Integer, default=20),
-    Column('questionFontColour', String(7), default=u"#000000"),
+    Column('questionFontColour', String(7), default="#000000"),
     # used for both question & answer
     Column('questionAlign', Integer, default=0),
     # ununsed
-    Column('answerFontFamily', UnicodeText, default=u"Arial"),
+    Column('answerFontFamily', UnicodeText, default="Arial"),
     Column('answerFontSize', Integer, default=20),
-    Column('answerFontColour', String(7), default=u"#000000"),
+    Column('answerFontColour', String(7), default="#000000"),
     Column('answerAlign', Integer, default=0),
-    Column('lastFontFamily', UnicodeText, default=u"Arial"),
+    Column('lastFontFamily', UnicodeText, default="Arial"),
     Column('lastFontSize', Integer, default=20),
     # used as background colour
-    Column('lastFontColour', String(7), default=u"#FFFFFF"),
+    Column('lastFontColour', String(7), default="#FFFFFF"),
     Column('editQuestionFontFamily', UnicodeText, default=None),
     Column('editQuestionFontSize', Integer, default=None),
     Column('editAnswerFontFamily', UnicodeText, default=None),
     Column('editAnswerFontSize', Integer, default=None),
     # empty answer
     Column('allowEmptyAnswer', Boolean, nullable=False, default=True),
-    Column('typeAnswer', UnicodeText, nullable=False, default=u""))
+    Column('typeAnswer', UnicodeText, nullable=False, default=""))
 
 class CardModel(object):
     """Represents how to generate the front and back of a card."""
-    def __init__(self, name=u"", qformat=u"q", aformat=u"a", active=True):
+    def __init__(self, name="", qformat="q", aformat="a", active=True):
         self.name = name
         self.qformat = qformat
         self.aformat = aformat
@@ -136,13 +136,13 @@ def formatQA(cid, mid, fact, tags, cm, deck):
     "Return a dict of {id, question, answer}"
     d = {'id': cid}
     fields = {}
-    for (k, v) in fact.items():
+    for (k, v) in list(fact.items()):
         fields["text:"+k] = stripHTML(v[1])
         if v[1]:
             fields[k] = '<span class="fm%s">%s</span>' % (
                 hexifyID(v[0]), v[1])
         else:
-            fields[k] = u""
+            fields[k] = ""
     fields['tags'] = tags[0]
     fields['Tags'] = tags[0]
     fields['modelTags'] = tags[1]
@@ -168,17 +168,17 @@ modelsTable = Table(
     Column('deckId', Integer, ForeignKey("decks.id", use_alter=True, name="deckIdfk")),
     Column('created', Float, nullable=False, default=time.time),
     Column('modified', Float, nullable=False, default=time.time),
-    Column('tags', UnicodeText, nullable=False, default=u""),
+    Column('tags', UnicodeText, nullable=False, default=""),
     Column('name', UnicodeText, nullable=False),
-    Column('description', UnicodeText, nullable=False, default=u""), # obsolete
-    Column('features', UnicodeText, nullable=False, default=u""), # used as mediaURL
+    Column('description', UnicodeText, nullable=False, default=""), # obsolete
+    Column('features', UnicodeText, nullable=False, default=""), # used as mediaURL
     Column('spacing', Float, nullable=False, default=0.1), # obsolete
     Column('initialSpacing', Float, nullable=False, default=60), # obsolete
     Column('source', Integer, nullable=False, default=0))
 
 class Model(object):
     "Defines the way a fact behaves, what fields it can contain, etc."
-    def __init__(self, name=u""):
+    def __init__(self, name=""):
         self.name = name
         self.id = genID()
 

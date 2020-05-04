@@ -62,7 +62,7 @@ if sys.platform == "win32":
         # python2.7+
         si.dwFlags |= subprocess._subprocess.STARTF_USESHOWWINDOW
     # tmp dir for non-hashed media
-    tmpdir = unicode(
+    tmpdir = str(
         tempfile.mkdtemp(prefix="oldanki"), sys.getfilesystemencoding())
 else:
     si = None
@@ -281,7 +281,7 @@ Error processing audio.
 If you're on Linux and don't have sox 14.1+, you
 need to disable normalization. See the wiki.
 
-Command was:\n""") + u" ".join(c))
+Command was:\n""") + " ".join(c))
 
 class PyAudioThreadedRecorder(threading.Thread):
 
@@ -306,7 +306,7 @@ class PyAudioThreadedRecorder(threading.Thread):
         while not self.finish:
             try:
                 data = stream.read(chunk)
-            except IOError, e:
+            except IOError as e:
                 if e[1] == pyaudio.paInputOverflowed:
                     data = None
                 else:

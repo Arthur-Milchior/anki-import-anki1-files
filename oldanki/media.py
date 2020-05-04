@@ -8,7 +8,7 @@ Media support
 """
 __docformat__ = 'restructuredtext'
 
-import os, shutil, re, urllib2, time, tempfile, unicodedata, urllib
+import os, shutil, re, urllib.request, urllib.error, urllib.parse, time, tempfile, unicodedata, urllib.request, urllib.parse, urllib.error
 from oldanki.db import *
 from oldanki.utils import checksum, genID
 from oldanki.lang import _
@@ -29,11 +29,11 @@ mediaTable = Table(
     # treated as modification date, not creation date
     Column('created', Float, nullable=False),
     # reused as md5sum. empty string if file doesn't exist on disk
-    Column('originalPath', UnicodeText, nullable=False, default=u""),
+    Column('originalPath', UnicodeText, nullable=False, default=""),
     # older versions stored original filename here, so we'll leave it for now
     # in case we add a feature to rename media back to its original name. in
     # the future we may want to zero this to save space
-    Column('description', UnicodeText, nullable=False, default=u""))
+    Column('description', UnicodeText, nullable=False, default=""))
 
 class Media(object):
     pass
@@ -98,10 +98,10 @@ def updateMediaCount(deck, file, count=1):
             file=file, c=count, t=time.time())
     elif count > 0:
         try:
-            sum = unicode(
+            sum = str(
                 checksum(open(os.path.join(mdir, file), "rb").read()))
         except:
-            sum = u""
+            sum = ""
         deck.s.statement("""
 insert into media (id, filename, size, created, originalPath, description)
 values (:id, :file, :c, :mod, :sum, '')""",
@@ -141,7 +141,7 @@ def escapeImages(string):
         if re.match("(https?|ftp)://", fname):
             return tag
         return tag.replace(
-            fname, urllib.quote(fname.encode("utf-8")))
+            fname, urllib.parse.quote(fname.encode("utf-8")))
     return re.sub(regexps[1], repl, string)
 
 # Rebuilding DB
@@ -158,7 +158,7 @@ def rebuildMediaDir(deck, delete=False, dirty=True):
     refs = {}
     normrefs = {}
     def norm(s):
-        if isinstance(s, unicode):
+        if isinstance(s, str):
             return unicodedata.normalize('NFD', s)
         return s
     for (question, answer) in deck.s.all(
@@ -171,7 +171,7 @@ def rebuildMediaDir(deck, delete=False, dirty=True):
                     refs[f] = 1
                     normrefs[norm(f)] = True
     # update ref counts
-    for (file, count) in refs.items():
+    for (file, count) in list(refs.items()):
         updateMediaCount(deck, file, count)
     # find unused media
     unused = []
@@ -197,9 +197,9 @@ def rebuildMediaDir(deck, delete=False, dirty=True):
         path = os.path.join(mdir, file)
         if not os.path.exists(path):
             if md5:
-                update.append({'f':file, 'sum':u"", 'c':time.time()})
+                update.append({'f':file, 'sum':"", 'c':time.time()})
         else:
-            sum = unicode(
+            sum = str(
                 checksum(open(os.path.join(mdir, file), "rb").read()))
             if md5 != sum:
                 update.append({'f':file, 'sum':sum, 'c':time.time()})
@@ -231,7 +231,7 @@ def downloadMissing(deck):
         if not os.path.exists(path):
             try:
                 rpath = urlbase + f
-                url = urllib2.urlopen(rpath)
+                url = urllib.request.urlopen(rpath)
                 open(f, "wb").write(url.read())
                 grabbed += 1
             except:
@@ -265,7 +265,7 @@ def downloadRemote(deck):
     for c, link in enumerate(refs.keys()):
         try:
             path = os.path.join(tmpdir, os.path.basename(link))
-            url = urllib2.urlopen(link)
+            url = urllib.request.urlopen(link)
             open(path, "wb").write(url.read())
             newpath = copyToMedia(deck, path)
             passed.append([link, newpath])

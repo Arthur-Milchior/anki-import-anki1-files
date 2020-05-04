@@ -559,7 +559,7 @@ order by ordinal""", mid)):
                 while 1:
                     state['fields'] += 1
                     fld = "Media %d" % state['fields']
-                    if fld not in self.col.models.fieldMap(m).keys():
+                    if fld not in list(self.col.models.fieldMap(m).keys()):
                         break
                 # add the new field
                 f = self.col.models.newField(fld)

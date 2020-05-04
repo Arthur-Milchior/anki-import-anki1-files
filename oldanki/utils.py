@@ -8,7 +8,7 @@ Miscellaneous utilities
 """
 __docformat__ = 'restructuredtext'
 
-import re, os, random, time, types, math, htmlentitydefs, subprocess
+import re, os, random, time, types, math, html.entities, subprocess
 
 try:
     import hashlib
@@ -146,25 +146,25 @@ def stripHTMLMedia(s):
 def tidyHTML(html):
     "Remove cruft like body tags and return just the important part."
     # contents of body - no head or html tags
-    html = re.sub(u".*<body.*?>(.*)</body></html>",
-                  "\\1", html.replace("\n", u""))
+    html = re.sub(".*<body.*?>(.*)</body></html>",
+                  "\\1", html.replace("\n", ""))
     # strip superfluous Qt formatting
-    html = re.sub(u"(?:-qt-table-type: root; )?"
+    html = re.sub("(?:-qt-table-type: root; )?"
                   "margin-top:\d+px; margin-bottom:\d+px; margin-left:\d+px; "
                   "margin-right:\d+px;(?: -qt-block-indent:0; "
-                  "text-indent:0px;)?", u"", html)
-    html = re.sub(u"-qt-paragraph-type:empty;", u"", html)
+                  "text-indent:0px;)?", "", html)
+    html = re.sub("-qt-paragraph-type:empty;", "", html)
     # strip leading space in style statements, and remove if no contents
-    html = re.sub(u'style=" ', u'style="', html)
-    html = re.sub(u' style=""', u"", html)
+    html = re.sub('style=" ', 'style="', html)
+    html = re.sub(' style=""', "", html)
     # convert P tags into SPAN and/or BR
-    html = re.sub(u'<p( style=.+?)>(.*?)</p>', u'<span\\1>\\2</span><br>', html)
-    html = re.sub(u'<p>(.*?)</p>', u'\\1<br>', html)
-    html = re.sub(u'<br>$', u'', html)
-    html = re.sub(u"^<table><tr><td style=\"border: none;\">(.*)<br></td></tr></table>$", u"\\1", html)
+    html = re.sub('<p( style=.+?)>(.*?)</p>', '<span\\1>\\2</span><br>', html)
+    html = re.sub('<p>(.*?)</p>', '\\1<br>', html)
+    html = re.sub('<br>$', '', html)
+    html = re.sub("^<table><tr><td style=\"border: none;\">(.*)<br></td></tr></table>$", "\\1", html)
     # this is being added by qt's html editor, and leads to unwanted spaces
-    html = re.sub(u"^<p dir='rtl'>(.*?)</p>$", u'\\1', html)
-    html = re.sub(u"^<br />$", "", html)
+    html = re.sub("^<p dir='rtl'>(.*?)</p>$", '\\1', html)
+    html = re.sub("^<br />$", "", html)
     return html
 
 def entsToTxt(html):
@@ -174,15 +174,15 @@ def entsToTxt(html):
             # character reference
             try:
                 if text[:3] == "&#x":
-                    return unichr(int(text[3:-1], 16))
+                    return chr(int(text[3:-1], 16))
                 else:
-                    return unichr(int(text[2:-1]))
+                    return chr(int(text[2:-1]))
             except ValueError:
                 pass
         else:
             # named entity
             try:
-                text = unichr(htmlentitydefs.name2codepoint[text[1:-1]])
+                text = chr(html.entities.name2codepoint[text[1:-1]])
             except KeyError:
                 pass
         return text # leave as is
@@ -195,7 +195,7 @@ def genID(static=[]):
     "Generate a random, unique 64bit ID."
     # 23 bits of randomness, 41 bits of current time
     # random rather than a counter to ensure efficient btree
-    t = long(time.time()*1000)
+    t = int(time.time()*1000)
     if not static:
         static.extend([t, {}])
     else:
@@ -209,19 +209,19 @@ def genID(static=[]):
             break
     x = rand << 41 | t
     # turn into a signed long
-    if x >= 9223372036854775808L:
-        x -= 18446744073709551616L
+    if x >= 9223372036854775808:
+        x -= 18446744073709551616
     return x
 
 def hexifyID(id):
     if id < 0:
-        id += 18446744073709551616L
+        id += 18446744073709551616
     return "%x" % id
 
 def dehexifyID(id):
     id = int(id, 16)
-    if id >= 9223372036854775808L:
-        id -= 18446744073709551616L
+    if id >= 9223372036854775808:
+        id -= 18446744073709551616
     return id
 
 def ids2str(ids):
@@ -241,7 +241,7 @@ def parseTags(tags):
     return [t.strip() for t in tags if t.strip()]
 
 def joinTags(tags):
-    return u" ".join(tags)
+    return " ".join(tags)
 
 def canonifyTags(tags):
     "Strip leading/trailing/superfluous commas and duplicates."
@@ -250,7 +250,7 @@ def canonifyTags(tags):
 
 def findTag(tag, tags):
     "True if TAG is in TAGS. Ignore case."
-    if not isinstance(tags, types.ListType):
+    if not isinstance(tags, list):
         tags = parseTags(tags)
     return tag.lower() in [t.lower() for t in tags]
 

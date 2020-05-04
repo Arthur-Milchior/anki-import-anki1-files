@@ -22,19 +22,19 @@ def byName(name):
     raise ValueError("No such model available!")
 
 def names():
-    return models.keys()
+    return list(models.keys())
 
 # Basic
 ##########################################################################
 
 def BasicModel():
     m = Model(_('Basic'))
-    m.addFieldModel(FieldModel(u'Front', True, True))
-    m.addFieldModel(FieldModel(u'Back', False, False))
-    m.addCardModel(CardModel(u'Forward', u'%(Front)s', u'%(Back)s'))
-    m.addCardModel(CardModel(u'Reverse', u'%(Back)s', u'%(Front)s',
+    m.addFieldModel(FieldModel('Front', True, True))
+    m.addFieldModel(FieldModel('Back', False, False))
+    m.addCardModel(CardModel('Forward', '%(Front)s', '%(Back)s'))
+    m.addCardModel(CardModel('Reverse', '%(Back)s', '%(Front)s',
                              active=False))
-    m.tags = u"Basic"
+    m.tags = "Basic"
     return m
 
 models['Basic'] = BasicModel
@@ -44,8 +44,8 @@ models['Basic'] = BasicModel
 
 def RecoveryModel():
     m = Model(_('Recovery'))
-    m.addFieldModel(FieldModel(u'Question', False, False))
-    m.addFieldModel(FieldModel(u'Answer', False, False))
-    m.addCardModel(CardModel(u'Single', u'{{{Question}}}', u'{{{Answer}}}'))
-    m.tags = u"Recovery"
+    m.addFieldModel(FieldModel('Question', False, False))
+    m.addFieldModel(FieldModel('Answer', False, False))
+    m.addCardModel(CardModel('Single', '{{{Question}}}', '{{{Answer}}}'))
+    m.tags = "Recovery"
     return m

@@ -34,7 +34,7 @@ class Field(object):
         if fieldModel:
             self.fieldModel = fieldModel
             self.ordinal = fieldModel.ordinal
-        self.value = u""
+        self.value = ""
         self.id = genID()
 
     def getName(self):
@@ -55,9 +55,9 @@ factsTable = Table(
     Column('modelId', Integer, ForeignKey("models.id"), nullable=False),
     Column('created', Float, nullable=False, default=time.time),
     Column('modified', Float, nullable=False, default=time.time),
-    Column('tags', UnicodeText, nullable=False, default=u""),
+    Column('tags', UnicodeText, nullable=False, default=""),
     # spaceUntil is reused as a html-stripped cache of the fields
-    Column('spaceUntil', UnicodeText, nullable=False, default=u""),
+    Column('spaceUntil', UnicodeText, nullable=False, default=""),
     # obsolete
     Column('lastCardId', Integer, ForeignKey(
     "cards.id", use_alter=True, name="lastCardIdfk")))
@@ -142,8 +142,8 @@ class Fact(object):
                     ankiqt.setModWarningShown = True
                 deck = ankiqt.mw.deck
             assert deck
-            self.spaceUntil = stripHTMLMedia(u" ".join(
-                self.values()))
+            self.spaceUntil = stripHTMLMedia(" ".join(
+                list(self.values())))
             for card in self.cards:
                 card.rebuildQA(deck)
 

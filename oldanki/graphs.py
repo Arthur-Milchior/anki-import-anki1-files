@@ -122,12 +122,12 @@ where type = 1""")
                                  ("dayRepsYoung", "combinedYoungReps"),
                                  ("dayRepsMature", "matureReps")]:
                 self.stats[dest] = dict(
-                    map(lambda dr: (-(todaydt -datetime.date(
-                    *(int(x)for x in dr["day"].split("-")))).days, dr[source]), dayReps))
+                    [(-(todaydt -datetime.date(
+                    *(int(x)for x in dr["day"].split("-")))).days, dr[source]) for dr in dayReps])
 
             self.stats['dayTimes'] = dict(
-                map(lambda dr: (-(todaydt -datetime.date(
-                *(int(x)for x in dr["day"].split("-")))).days, dr["reviewTime"]/60.0), dayTimes))
+                [(-(todaydt -datetime.date(
+                *(int(x)for x in dr["day"].split("-")))).days, dr["reviewTime"]/60.0) for dr in dayTimes])
 
     def nextDue(self, days=30):
         self.calcStats()
@@ -141,7 +141,7 @@ where type = 1""")
         argl = []
 
         for dayslist in dayslists:
-            dl = [x for x in dayslist.items() if x[0] <= days]
+            dl = [x for x in list(dayslist.items()) if x[0] <= days]
             argl.extend(list(self.unzip(dl)))
 
         self.varGraph(graph, days, [dueYoungC, dueMatureC], *argl)
@@ -169,7 +169,7 @@ where type = 1""")
         fig = Figure(figsize=(self.width, self.height), dpi=self.dpi)
         graph = fig.add_subplot(111)
 
-        args = sum((self.unzip(self.stats[type].items(), limit=days, reverseLimit=True) for type in ["dayRepsMature", "dayRepsYoung", "dayRepsNew"][::-1]), [])
+        args = sum((self.unzip(list(self.stats[type].items()), limit=days, reverseLimit=True) for type in ["dayRepsMature", "dayRepsYoung", "dayRepsNew"][::-1]), [])
 
         self.varGraph(graph, days, [reviewNewC, reviewYoungC, reviewMatureC], *args)
 
@@ -195,7 +195,7 @@ where type = 1""")
         fig = Figure(figsize=(self.width, self.height), dpi=self.dpi)
         times = self.stats['dayTimes']
         self.addMissing(times, -days+1, 0)
-        times = self.unzip([(day,y) for (day,y) in times.items()
+        times = self.unzip([(day,y) for (day,y) in list(times.items())
                             if day + days >= 0])
         graph = fig.add_subplot(111)
         self.varGraph(graph, days, reviewTimeC, *times)
@@ -210,7 +210,7 @@ where type = 1""")
         fig = Figure(figsize=(self.width, self.height), dpi=self.dpi)
         graph = fig.add_subplot(111)
         self.addMissing(self.stats['next'], 0, days-1)
-        dl = [x for x in self.stats['next'].items() if x[0] <= days]
+        dl = [x for x in list(self.stats['next'].items()) if x[0] <= days]
         (x, y) = self.unzip(dl)
         count=0
         y = list(y)
@@ -233,7 +233,7 @@ where type = 1""")
         fig = Figure(figsize=(self.width, self.height), dpi=self.dpi)
         ints = self.stats['days']
         self.addMissing(ints, 0, days)
-        intervals = self.unzip(ints.items(), limit=days)
+        intervals = self.unzip(list(ints.items()), limit=days)
         graph = fig.add_subplot(111)
         self.varGraph(graph, days, intervC, *intervals)
         graph.set_xlim(xmin=0, xmax=days+1)
@@ -253,7 +253,7 @@ where type = 1""")
             days[d] = days.get(d, 0) + 1
         self.addMissing(days, -numdays+1, 0)
         graph = fig.add_subplot(111)
-        intervals = self.unzip(days.items())
+        intervals = self.unzip(list(days.items()))
         if attr == 'created':
             colour = addedC
         else:
@@ -279,7 +279,7 @@ where type = 1""")
                 tuples = tuples[-limit:]
             else:
                 tuples = tuples[:limit+1]
-        new = zip(*tuples)
+        new = list(zip(*tuples))
         return new
 
     def varGraph(self, graph, days, colours=["b"], *args):
@@ -352,7 +352,7 @@ where type = 1""")
             else:
                 ticks = [int(lim[0] + step * x) for x in range(10)]
         else:
-            ticks = list(xrange(lim[0], lim[1]+1))
+            ticks = list(range(lim[0], lim[1]+1))
         graph.set_xticks(np.array(ticks) + 0.5)
         graph.set_xticklabels([str(int(x)) for x in ticks])
         for tick in graph.xaxis.get_major_ticks():
@@ -386,7 +386,7 @@ where type = 1""")
                                      / float(total)) * 100 + 1
                 except ZeroDivisionError:
                     arr[e+offset] = 0
-            bars.append(graph.bar(range(arrsize), arr, width=1.0,
+            bars.append(graph.bar(list(range(arrsize)), arr, width=1.0,
                                   color=colours[n], align='center'))
             arr = [0] * arrsize
             offset += 5
@@ -398,7 +398,7 @@ where type = 1""")
                      'upper left')
         graph.set_ylim(ymax=100)
         graph.set_xlim(xmax=15)
-        graph.set_xticks(range(arrsize))
+        graph.set_xticks(list(range(arrsize)))
         graph.set_xticklabels(x)
         graph.set_ylabel("% of Answers")
         graph.set_xlabel("Answer Buttons")

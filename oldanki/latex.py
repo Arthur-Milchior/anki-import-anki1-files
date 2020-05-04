@@ -11,7 +11,7 @@ __docformat__ = 'restructuredtext'
 import re, tempfile, os, sys, shutil, cgi, subprocess
 from oldanki.utils import genID, checksum, call
 from oldanki.hooks import addHook
-from htmlentitydefs import entitydefs
+from html.entities import entitydefs
 from oldanki.lang import _
 
 latexDviPngCmd = ["dvipng", "-D", "200", "-T", "tight"]

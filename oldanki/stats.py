@@ -496,7 +496,7 @@ class DeckStats(object):
 
     def intervalReport(self, intervals, labels, total):
         boxes = self.splitIntoIntervals(intervals)
-        keys = boxes.keys()
+        keys = list(boxes.keys())
         keys.sort()
         html = ""
         for key in keys:
