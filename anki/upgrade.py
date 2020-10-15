@@ -11,6 +11,7 @@ from .storage import _addSchema, _getColVars,  _addColVars, _updateIndices
 from anki.rsbackend import RustBackend
 from aqt import mw
 
+SCHEMA_VERSION = 11 # was: pylib/anki/consts.py@70
 
 #
 # Upgrading is the first step in migrating to 2.0.
@@ -354,7 +355,7 @@ insert or replace into col select id, cast(created as int), :t,
         db.execute("drop table deckVars")
 
     def _migrateModels(self):
-        import anki.models
+        from . import models
         db = self.db
         times = {}
         mods = {}
@@ -365,7 +366,7 @@ insert or replace into col select id, cast(created as int), :t,
             if t > 4294967296:
                 t >>= 32
             assert t > 0
-            m = anki.models.defaultModel.copy()
+            m = models.defaultModel.copy()
             m['id'] = t
             m['name'] = row[1]
             m['mod'] = intTime()
@@ -381,9 +382,9 @@ insert or replace into col select id, cast(created as int), :t,
         db.execute("drop table models")
 
     def _fieldsForModel(self, mid):
-        import anki.models
+        from . import models
         db = self.db
-        dconf = anki.models.defaultField
+        dconf = models.defaultField
         flds = []
         # note: qsize & qcol are used in upgrade then discarded
         for c, row in enumerate(db.all("""
@@ -409,9 +410,9 @@ order by ordinal""", mid)):
         return flds
 
     def _templatesForModel(self, mid, flds):
-        import anki.models
+        from . import models
         db = self.db
-        dconf = anki.models.defaultTemplate
+        dconf = models.defaultTemplate
         tmpls = []
         for c, row in enumerate(db.all("""
 select name, active, qformat, aformat, questionInAnswer,
