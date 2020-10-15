@@ -4,6 +4,9 @@ from anki.consts import *
 import copy
 import anki
 from anki.lang import _
+from anki.utils import intTime
+
+SCHEMA_VERSION = 11 # was: pylib/anki/consts.py@70
 
 def _addSchema(db, setColConf=True):
     db.executescript("""
@@ -92,7 +95,7 @@ update col set conf = ?, decks = ?, dconf = ?""",
 def _getColVars(db):
     from . import collection
     from . import decks
-    g = copy.deepcopy(anki.decks.defaultDeck)
+    g = copy.deepcopy(decks.defaultDeck)
     g['id'] = 1
     g['name'] = _("Default")
     g['conf'] = 1
