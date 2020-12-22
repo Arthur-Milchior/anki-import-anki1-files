@@ -123,7 +123,7 @@ class Template(object):
     def render_tag(self, tag_name, context):
         """Given a tag name and context, finds, escapes, and renders the tag."""
         raw = get_or_attr(context, tag_name, '')
-        if not raw and raw is not 0:
+        if not raw and raw != 0:
             return ''
         return re.sub("^<span.+?>(.*)</span>", "\\1", raw)
 
