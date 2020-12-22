@@ -3636,7 +3636,7 @@ class DeckStorage(object):
             if os.path.exists(path):
                 create = False
             # sqlite needs utf8
-            sqlpath = path.encode("utf-8")
+            sqlpath = path#.encode("utf-8")
         try:
             (engine, session) = DeckStorage._attach(sqlpath, create, pool)
             s = session()
