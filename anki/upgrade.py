@@ -736,7 +736,7 @@ update cards set due = cast(
             self.col.sched.orderCards(1)
         # optimize and finish
         self.col.db.commit()
-        self.col.db.execute("vacuum")
+        #self.col.db.execute("vacuum")
         self.col.db.execute("analyze")
         self.col.db.execute("update col set ver = ?", SCHEMA_VERSION)
         self.col.save()

@@ -3388,7 +3388,7 @@ original layout of the facts has been lost."""))
     def optimize(self):
         oldSize = os.stat(self.path)[stat.ST_SIZE]
         self.s.commit()
-        self.s.statement("vacuum")
+        #self.s.statement("vacuum)
         self.s.statement("analyze")
         newSize = os.stat(self.path)[stat.ST_SIZE]
         return oldSize - newSize
@@ -3702,7 +3702,7 @@ class DeckStorage(object):
                 deck.s.commit()
                 deck.s.execute("pragma legacy_file_format = off")
                 deck.s.execute("pragma default_cache_size= 20000")
-                deck.s.execute("vacuum")
+                #deck.s.execute("vacuum")
                 # add views/indices
                 initTagTables(deck.s)
                 DeckStorage._addViews(deck)
@@ -3976,7 +3976,7 @@ order by priority desc, due desc""")
             # rebuild with new file format
             deck.s.commit()
             deck.s.execute("pragma legacy_file_format = off")
-            deck.s.execute("vacuum")
+            #deck.s.execute("vacuum")
             # add views/indices
             DeckStorage._addViews(deck)
             DeckStorage._addIndices(deck)
@@ -4129,7 +4129,7 @@ where interval < 1""")
             deck.version = 20
             deck.s.commit()
         if deck.version < 21:
-            deck.s.statement("vacuum")
+            #deck.s.statement("vacuum")
             deck.s.statement("analyze")
             deck.version = 21
             deck.s.commit()
@@ -4187,7 +4187,7 @@ where interval < 1""")
                 deck.updateCardsFromModel(m, dirty=False)
             deck.version = 26
             deck.s.commit()
-            deck.s.statement("vacuum")
+            #deck.s.statement("vacuum")
         if deck.version < 27:
             DeckStorage._addIndices(deck)
             deck.updateCardTags()
@@ -4235,7 +4235,7 @@ nextFactor, reps, thinkingTime, yesCount, noCount from reviewHistory""")
             deck.s.statement("drop table revtmp")
             deck.version = 31
             deck.s.commit()
-            deck.s.statement("vacuum")
+            #deck.s.statement("vacuum")
         if deck.version < 32:
             deck.s.execute("drop index if exists ix_cardTags_tagId")
             deck.s.execute("drop index if exists ix_cardTags_cardId")
@@ -4391,7 +4391,7 @@ this message. (ERR-0101)""") % {
             deck.s.statement("drop index if exists ix_cards_typeCombined")
             DeckStorage._addIndices(deck)
             deck.updateDynamicIndices()
-            deck.s.execute("vacuum")
+            # deck.s.execute("vacuum")
             deck.version = 62
             deck.s.commit()
         if deck.version < 64:
@@ -4419,7 +4419,7 @@ this message. (ERR-0101)""") % {
             deck.s.commit()
             deck.s.execute("pragma page_size = 4096")
             deck.s.execute("pragma legacy_file_format = 0")
-            deck.s.execute("vacuum")
+            #deck.s.execute("vacuum")
             deck.setVar("pageSize", 4096, mod=False)
             deck.s.commit()
         if prog:
