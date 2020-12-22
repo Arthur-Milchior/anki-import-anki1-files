@@ -1,6 +1,0 @@
-from anki.importing import Importers
-from .anki1 import Anki1Importer
-
-Importers.append((_("Anki 1.2 Deck (*.anki)"), Anki1Importer))
-
-print("imported importer")
