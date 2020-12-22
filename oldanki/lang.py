@@ -26,7 +26,7 @@ def localTranslation():
         return currentTranslation
 
 def _(str):
-    return localTranslation().ugettext(str)
+    return str
 
 def ngettext(single, plural, n):
     return localTranslation().ungettext(single, plural, n)
