@@ -47,8 +47,10 @@ class Upgrader(object):
         # corrupt?
         try:
             if db.scalar("pragma integrity_check") != "ok":
+                self.cause = "pragma not ok"
                 return "invalid"
         except:
+            self.cause = "pragma exceptiom"
             return "invalid"
         # old version?
         if db.scalar("select version from decks") < 65:
@@ -108,13 +110,15 @@ f.id = cards.factId)"""):
         from oldanki import DeckStorage
         try:
             deck = DeckStorage.Deck(path, backup=False)
-        except:
+        except Exception as e:
             # if we can't open the file, it's invalid
+            self.cause = e
             return "invalid"
         # run a db check
         res = deck.fixIntegrity()
         if "Database file is damaged" in res:
             # we can't recover from a corrupt db
+            self.cause = res
             return "invalid"
         # other errors are non-fatal
         deck.close()

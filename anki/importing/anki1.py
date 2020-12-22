@@ -18,6 +18,8 @@ class Anki1Importer(Anki2Importer):
         if res == "invalid":
             self.log.append(_(
                 "File is invalid. Please restore from backup."))
+            if (isinstance(u.cause, Exception)):
+                raise u.cause
             raise Exception("invalidFile")
         # upgrade
         if res != "ok":
