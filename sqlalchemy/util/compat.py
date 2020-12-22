@@ -327,10 +327,7 @@ else:
     from inspect import formatargspec as inspect_formatargspec  # noqa
 
 
-if win32 or jython:
-    time_func = time.clock
-else:
-    time_func = time.time
+time_func = time.time
 
 # Fix deprecation of accessing ABCs straight from collections module
 # (which will stop working in 3.8).
