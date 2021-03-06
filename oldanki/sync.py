@@ -23,7 +23,7 @@ Full sync support is not documented yet.
 __docformat__ = 'restructuredtext'
 
 import zlib, re, urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse, socket, time, shutil
-from anki.utils import json as simplejson
+import json as simplejson
 import os, base64, http.client, sys, tempfile, http.client, types
 from datetime import date
 import oldanki, oldanki.deck, oldanki.cards

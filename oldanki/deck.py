@@ -10,7 +10,7 @@ __docformat__ = 'restructuredtext'
 
 import tempfile, time, os, random, sys, re, stat, shutil
 import types, traceback, datetime
-from anki.utils import json as simplejson
+import json as simplejson
 
 from oldanki.db import *
 from oldanki.lang import _, ngettext
