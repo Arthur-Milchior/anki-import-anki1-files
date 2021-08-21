@@ -8,7 +8,7 @@ from anki.db import DB
 from .collection import _Collection
 from anki.consts import *
 from .storage import _addSchema, _getColVars,  _addColVars, _updateIndices
-from anki.rsbackend import RustBackend
+from anki._backend import RustBackend
 from aqt import mw
 
 SCHEMA_VERSION = 11 # was: pylib/anki/consts.py@70
