@@ -6,7 +6,7 @@ from aqt.importing import *
 from anki.lang import _
 
 def onImport(mw):
-    extensions = [x[0] for x in importing.Importers]
+    extensions = [x[0] for x in importing.importers(mw.col)]
     if ".anki" not in extensions:
         extensions.append(".anki")
     filt = ";;".join(extensions)
