@@ -32,6 +32,6 @@ def onImport(mw):
     if ext == ".anki":
         showWarning(_("""Please restart anki when you are done importing ".anki" files. It
 is possible that using anki without restarting may have unexpected
-result."""))
+results."""))
     
 aqt.importing.onImport = onImport
