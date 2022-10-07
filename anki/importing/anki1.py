@@ -52,6 +52,4 @@ class Anki1Importer(Anki2Importer):
         # While a qt action should NOT occur in a back-end importer;
         # it's far far simpler than to deal with a special case in front-end.
         # And anyway, the app should be restarted, so who cares.
-        showWarning(_("""Please restart anki when you are done importing ".anki" files. It
-is possible that usin anki without restarting may have unexpected
-result."""))
+        showWarning(_("""Please restart Anki when you are done importing ".anki" files. It is possible that using Anki without restarting may have unexpected results."""))
