@@ -1,2 +1,3 @@
 rm dot_anki.zip
-zip -r dot_anki.zip sqlalchemy anki aqt oldanki config.* *.ui *.sh *.py *.css *.js web  LICENSE *.md zipping --exclude \*~ \*zip ankiweb {,*/{,*/{,*/}}}__pycache__
+find . -name __pycache__ -exec rm -r {} \;
+zip -r dot_anki.zip sqlalchemy anki aqt oldanki config.* *.ui *.sh *.py *.css *.js web  LICENSE *.md zipping --exclude \*~ \*zip --exclude ankiweb
