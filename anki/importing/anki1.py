@@ -5,6 +5,7 @@
 import traceback, os, re
 from anki.lang import _
 from anki.importing.anki2 import Anki2Importer
+from aqt.utils import showWarning
 
 class Anki1Importer(Anki2Importer):
 
@@ -48,3 +49,9 @@ class Anki1Importer(Anki2Importer):
         did = self.col.decks.id(self.deckPrefix)
         d = self.col.decks.get(did)
         self.col.decks.setConf(d, id)
+        # While a qt action should NOT occur in a back-end importer;
+        # it's far far simpler than to deal with a special case in front-end.
+        # And anyway, the app should be restarted, so who cares.
+        showWarning(_("""Please restart anki when you are done importing ".anki" files. It
+is possible that usin anki without restarting may have unexpected
+result."""))
