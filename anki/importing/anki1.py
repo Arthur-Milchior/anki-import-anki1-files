@@ -4,7 +4,6 @@
 
 import traceback, os, re
 from anki.lang import _
-from ..upgrade import Upgrader
 from anki.importing.anki2 import Anki2Importer
 
 class Anki1Importer(Anki2Importer):
@@ -12,6 +11,7 @@ class Anki1Importer(Anki2Importer):
     dupeOnSchemaChange = True
 
     def run(self):
+        from ..upgrade import Upgrader
         u = Upgrader()
         # check
         res = u.check(self.file)
