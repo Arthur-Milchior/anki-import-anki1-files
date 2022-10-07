@@ -295,3 +295,15 @@ def call(argv, wait=True, **kwargs):
     else:
         ret = 0
     return ret
+
+# Copied fron anki2.
+# Not sure at all why it was used with import anki.utils.
+# instead of using anki1 code. Keeping it anyway.
+def minimizeHTML(s: str) -> str:
+    "Correct Qt's verbose bold/underline/etc."
+    s = re.sub('<span style="font-weight:600;">(.*?)</span>', "<b>\\1</b>", s)
+    s = re.sub('<span style="font-style:italic;">(.*?)</span>', "<i>\\1</i>", s)
+    s = re.sub(
+    '<span style="text-decoration: underline;">(.*?)</span>', "<u>\\1</u>", s
+    )
+    return s

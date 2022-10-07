@@ -196,7 +196,7 @@ select id, id, modelId, cast(created*1000 as int), cast(modified as int),
         map = {}
         data = []
         factidmap = {}
-        from anki.utils import minimizeHTML
+        from oldanki.utils import minimizeHTML
         highest = 0
         for c, row in enumerate(facts):
             oldid = row[0]
